@@ -41,8 +41,7 @@ void textcolor(int letra, int fundo)
 {
   __FOREGROUND = letra;
   __BACKGROUND = fundo;
-  SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
-                          letra + (__BACKGROUND << 4));
+  SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), letra + (__BACKGROUND << 4));
 }
 
 graph graphInitiate() // the integer n represents the size of the matrix n*n
@@ -89,16 +88,48 @@ void printGraph(graph mainGraph)
       printf("%d:", mainGraph->M[i][j]);
     printf("\n");
   }
+  system("pause");
 }
 
 void Dijkstra(graph mainGraph, int iniNode)
 {
   int i, j, minor;
-  int isOpen[mainGraph->vertices], dist[mainGraph->vertices], pred[mainGraph->vertices];
+  int *isOpen = malloc(sizeof(int) * mainGraph->vertices);
+  int *dist = malloc(sizeof(int) * mainGraph->vertices);
+  int *pred = malloc(sizeof(int) * mainGraph->vertices);
   iniAuxGraph(mainGraph, dist, pred, isOpen, iniNode);
-  minor = openMinor(mainGraph, isOpen, dist);
-  printf("minor = %d", minor);
+  for (i = 0; i < mainGraph->vertices; i++)
+  {
+    minor = openMinor(mainGraph, isOpen, dist);
+    isOpen[minor] = 0;
+    for (j = 0; j < mainGraph->vertices; j++)
+    {
+      if (mainGraph->M[minor][j] != 0 && (mainGraph->M[minor][j] + dist[minor]) < dist[j])
+      {
+        dist[j] = mainGraph->M[minor][j] + dist[minor];
+        pred[j] = minor;
+      }
+    }
+  }
+  for (i = 0; i < mainGraph->vertices; i++)
+  {
+    if (i != iniNode)
+    {
+      printf("distancia ao vertice %d: %d\n", i, dist[i]);
+      j = i;
+      printf("Caminho: %d", j);
+      while (j != iniNode)
+      {
+        printf("<-%d", pred[j]);
+        j = pred[j];
+      }
+      printf("\n");
+    }
+  }
   system("pause");
+  free(isOpen);
+  free(dist);
+  free(pred);
 }
 
 int openMinor(graph mainGraph, int *isOpen, int *dist)
@@ -219,30 +250,29 @@ int main()
       system("cls");
       if (mainGraph == NULL)
       {
-        printf("Ei! Voce esta pulando etapas, primeiro inicialize o grafo.");
+        printf("\nEi! Voce esta pulando etapas, primeiro inicialize o grafo.\n");
         system("pause");
         break;
       }
       for (;;)
       {
-        printf("Informe o vértice inicial: ");
+        printf("Informe o vertice inicial: ");
         scanf("%d", &iniNode);
         if (iniNode >= 0 && iniNode <= mainGraph->vertices)
           break;
         else
         {
-          printf("\nVertice inválido, favor informar novamente.");
+          printf("\nVertice invalido, favor informar novamente.\n");
           system("pause");
         }
       }
       Dijkstra(mainGraph, iniNode);
       break;
     case 3:
-      system("cls");
-      printf("3");
+      printGraph(mainGraph);
       break;
     case 4:
-      system("cls");
+      free(mainGraph);
       return 0;
       break;
     }
